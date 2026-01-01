@@ -1,6 +1,6 @@
 # llm-cli
 
-![llm-cli demo](llm-cli_quickstart.gif)
+![llm-cli demo](resources/llm-cli.gif)
 
 *Watch the [full demo on asciinema](https://asciinema.org/a/765265)*
 
