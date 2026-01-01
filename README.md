@@ -2,6 +2,8 @@
 
 ![llm-cli demo](llm-cli_quickstart.gif)
 
+*Watch the [full demo on asciinema](https://asciinema.org/a/765265)*
+
 A simple CLI wrapper for [Claude](https://github.com/anthropics/claude-cli) and [Gemini](https://github.com/google/generative-ai-cli) CLIs. Provides a unified interface to prompt different models without worrying about which underlying CLI to use.
 
 ## Features
