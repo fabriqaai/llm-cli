@@ -5,13 +5,11 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - '**.md'
   workflow_dispatch:
     inputs:
       bump:
         description: 'Version bump type'
-        required: true
+        required: false
         default: 'patch'
         type: choice
         options:
@@ -37,7 +35,7 @@ jobs:
         uses: anothrNick/github-tag-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_BUMP: ${{ inputs.bump || 'patch' }}
+          DEFAULT_BUMP: patch
           WITH_V: true
           RELEASE_BRANCHES: main
           INITIAL_VERSION: 0.1.0
@@ -54,7 +52,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: latest
+          version: ~> 2.2
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
