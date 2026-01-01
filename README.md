@@ -4,6 +4,15 @@ A simple CLI wrapper for [Claude](https://github.com/anthropics/claude-cli) and 
 
 ## Installation
 
+### Homebrew (macOS/Linux)
+
+```bash
+brew tap fabriqaai/tap
+brew install llm-cli
+```
+
+### From Source
+
 ```bash
 # Clone the repo
 git clone https://github.com/fabriqaai/llm-cli.git
@@ -27,6 +36,9 @@ On first run, llm-cli creates a default config file at `~/.llm-cli/models.config
 ## Usage
 
 ```bash
+# Check version
+llm-cli version
+
 # Send a prompt (uses default model: claude-sonnet-4)
 llm-cli prompt "explain go interfaces"
 
@@ -70,18 +82,20 @@ Edit `~/.llm-cli/models.config` to add custom models:
 Run `llm-cli models` to see all available models. By default includes:
 
 ### Claude Models
+
 - `claude-opus-4-5` - Latest Opus
 - `claude-sonnet-4-5` - Latest Sonnet
 - `claude-haiku-4` - Latest Haiku
 - And more...
 
 ### Gemini Models
+
 - `gemini-pro` - Gemini 2.0 Flash
 - `gemini-2-pro` - Gemini 1.5 Pro
 - And more...
 
 ## Requirements
 
-- Go 1.23+
+- Go 1.23+ (for building from source)
 - [claude CLI](https://github.com/anthropics/claude-cli) installed (for Claude models)
 - [gemini CLI](https://github.com/google/generative-ai-python) installed (for Gemini models)
