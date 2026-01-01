@@ -245,9 +245,7 @@ Run `llm-cli models` to see all available models.
 **Before using llm-cli, you must have the underlying CLIs installed and configured:**
 
 - **Claude CLI** - Install via `npm install -g @anthropic-ai/claude-cli` (for Claude models)
-  - Requires API key configured (run `claude` once to authenticate)
 - **Gemini CLI** - Install via `npm install -g @google/generative-ai-cli` (for Gemini models)
-  - Requires API key configured (run `gemini` once to authenticate)
 
 Both CLIs must be working independently before using llm-cli.
 
