@@ -1,53 +1,44 @@
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+# goreleaser configuration for llm-cli
+# Docs: https://goreleaser.com
+
 version: 2
 
 before:
   hooks:
     - go mod tidy
-    - go generate ./...
 
 builds:
-  - env:
+  - id: llm-cli
+    binary: llm-cli
+    main: .
+    env:
       - CGO_ENABLED=0
     goos:
-      - linux
       - darwin
+      - linux
     goarch:
       - amd64
       - arm64
+    ignore:
+      - goos: linux
+        goarch: arm64
     ldflags:
       - -s -w
       - -X main.Version={{.Version}}
       - -X main.Commit={{.Commit}}
       - -X main.Date={{.Date}}
-    main: .
 
 archives:
-  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    formats:
-      - tar.gz
-    format_overrides:
-      - goos: windows
-        formats:
-          - zip
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
 
-brews:
-  - name: llm-cli
-    homepage: https://github.com/fabriqaai/llm-cli
-    repository:
-      owner: fabriqaai
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    directory: Formula
-    description: "CLI wrapper for Claude and Gemini CLIs"
-    license: MIT
-    commit_author:
-      name: github-actions
-      email: github-actions@github.com
-    install: |
-      bin.install "llm-cli"
-    test: |
-      system "#{bin}/llm-cli", "version"
+checksum:
+  name_template: 'checksums.txt'
 
 changelog:
   sort: asc
@@ -55,11 +46,29 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
-      - '^ci:'
-      - '^build:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: llm-cli
+    repository:
+      owner: fabriqaai
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/fabriqaai/llm-cli"
+    description: "A unified CLI for Claude and Gemini LLMs"
+    license: "MIT"
+    install: |
+      bin.install "llm-cli"
+    test: |
+      system "#{bin}/llm-cli", "version"
 
 release:
   github:
     owner: fabriqaai
     name: llm-cli
-  mode: replace
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
