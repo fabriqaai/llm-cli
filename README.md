@@ -8,7 +8,7 @@ A simple CLI wrapper for [Claude](https://github.com/anthropics/claude-cli) and 
 
 - **Unified Interface** - Single CLI for both Claude and Gemini models
 - **Model Aliases** - Easy-to-remember model names (haiku, opus, sonnet, gemini, flash)
-- **Config File** - Add custom models and change defaults via `~/.llm-cli/models.json`
+- **Config Files** - Add custom models and change defaults via `~/.llm-cli/models.json` and `~/.llm-cli/options.json`
 - **Streaming Output** - Real-time response streaming with progress indicator
 - **Session Management** - Control where CLI sessions are stored (current dir or central location)
 - **System Prompts** - Set context for your conversations
