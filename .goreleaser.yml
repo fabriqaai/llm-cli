@@ -39,6 +39,8 @@ brews:
       email: github-actions@github.com
     install: |
       bin.install "llm-cli"
+    test: |
+      system "#{bin}/llm-cli", "version"
 
 changelog:
   sort: asc
