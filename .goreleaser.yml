@@ -35,6 +35,10 @@ brews:
     repository:
       owner: fabriqaai
       name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    description: "CLI wrapper for Claude and Gemini CLIs"
+    license: MIT
     commit_author:
       name: github-actions
       email: github-actions@github.com
