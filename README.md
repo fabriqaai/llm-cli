@@ -137,10 +137,6 @@ The `~/.llm-cli/models.json` file contains all model aliases. After the first ru
     "my-custom-model": {
       "cli": "claude",
       "model_id": "claude-3-5-sonnet-20241022"
-    },
-    "gpt4": {
-      "cli": "llm",
-      "model_id": "gpt-4"
     }
   }
 }
