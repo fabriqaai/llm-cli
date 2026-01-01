@@ -18,7 +18,7 @@ func ConfigDir() string {
 
 // ConfigFile returns the models config file path
 func ConfigFile() string {
-	return filepath.Join(ConfigDir(), "models.config")
+	return filepath.Join(ConfigDir(), "models.json")
 }
 
 // ModelConfig maps a model alias to CLI and model ID

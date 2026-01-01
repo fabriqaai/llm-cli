@@ -14,12 +14,13 @@ import (
 )
 
 var (
-	modelFlag  string
-	promptFlag string
-	systemFlag string
-	version    string
-	commit     string
-	date       string
+	modelFlag           string
+	promptFlag          string
+	systemFlag          string
+	runOnCurrentDirFlag bool
+	version             string
+	commit              string
+	date                string
 )
 
 var rootCmd = &cobra.Command{
@@ -28,11 +29,57 @@ var rootCmd = &cobra.Command{
 	Long: `llm-cli is a simple wrapper around the claude and gemini CLIs.
 It provides shortcuts for common models and aliases.
 
-Examples:
+EXAMPLES:
+  # Simple prompt with default model (haiku)
+  llm-cli "what is the capital of france?"
+
+  # Use a specific model alias
   llm-cli haiku "what is the capital of france?"
   llm-cli opus "explain go interfaces"
+  llm-cli sonnet "write a python function"
   llm-cli gemini "what is 2+2?"
-  llm-cli models`,
+  llm-cli flash "translate hello to spanish"
+
+  # Using flags
+  llm-cli -m haiku "hello"
+  llm-cli -m opus -s "You are a Go expert" "how do I use interfaces?"
+  llm-cli -p "what is 2+2?"
+
+  # List all available models
+  llm-cli models
+
+  # Check version
+  llm-cli version
+
+POSITIONAL ARGUMENTS:
+  model-alias    Optional model alias (haiku, opus, sonnet, gemini, flash, etc.)
+                 If omitted, uses the default model (haiku)
+
+  prompt         The prompt text to send to the LLM
+
+FLAGS:
+  -m, --model string              Model to use (e.g., haiku, opus, sonnet, gemini)
+  -p, --prompt string             Prompt text
+  -s, --system string             System prompt for context
+  -d, --run-on-current-directory  Run CLI in current directory instead of sessions folder
+                                  (overrides ~/.llm-cli/options.json config)
+
+CONFIGURATION:
+  Models config: ~/.llm-cli/models.json
+  Options config: ~/.llm-cli/options.json
+
+  The options.json file controls session directory behavior:
+  {
+    "run_on_current_directory": true   // true = current dir, false = ~/.llm-cli/sessions
+  }
+
+SESSIONS:
+  When run_on_current_directory is true (default), the underlying CLI (claude/gemini)
+  stores session history in the current directory. You can resume these sessions using:
+    claude --resume    (for Claude models)
+    gemini --resume    (for Gemini models)
+
+  When false, sessions are stored in ~/.llm-cli/sessions/`,
 	Args:              cobra.ArbitraryArgs,
 	DisableFlagParsing: false,
 	RunE:              runRoot,
@@ -54,6 +101,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&modelFlag, "model", "m", "", "Model to use (e.g., haiku, opus, sonnet, gemini)")
 	rootCmd.Flags().StringVarP(&promptFlag, "prompt", "p", "", "Prompt text")
 	rootCmd.Flags().StringVarP(&systemFlag, "system", "s", "", "System prompt for context")
+	rootCmd.Flags().BoolVarP(&runOnCurrentDirFlag, "run-on-current-directory", "d", false, "Run CLI in current directory (overrides options config)")
 	rootCmd.AddCommand(versionCmd)
 }
 
@@ -104,13 +152,19 @@ func runRoot(cmd *cobra.Command, args []string) error {
 	modelConfig := config.GetModelConfig(modelAlias)
 
 	// Execute the appropriate CLI
-	return executeLLM(modelConfig.CLI, modelConfig.ModelID, promptText, systemFlag)
+	return executeLLM(modelConfig.CLI, modelConfig.ModelID, promptText, systemFlag, runOnCurrentDirFlag)
 }
 
 // executeLLM runs the appropriate CLI with the prompt
-func executeLLM(cli, modelID, prompt, systemPrompt string) error {
+func executeLLM(cli, modelID, prompt, systemPrompt string, runOnCurrentDir bool) error {
 	if prompt == "" {
 		return fmt.Errorf("no prompt provided")
+	}
+
+	// Get the working directory for this session
+	workDir, err := config.GetWorkingDirectory(runOnCurrentDir)
+	if err != nil {
+		return fmt.Errorf("failed to determine working directory: %w", err)
 	}
 
 	// Build the command based on CLI type
@@ -139,6 +193,7 @@ func executeLLM(cli, modelID, prompt, systemPrompt string) error {
 	}
 
 	command := exec.Command(cli, args...)
+	command.Dir = workDir
 
 	// Set up pipes for stdout and stderr
 	stdout, err := command.StdoutPipe()
