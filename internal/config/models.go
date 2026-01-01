@@ -21,10 +21,12 @@ func ConfigFile() string {
 	return filepath.Join(ConfigDir(), "models.config")
 }
 
-// ModelConfig maps a model ID to its CLI and model name
+// ModelConfig maps a model alias to CLI and model ID
 type ModelConfig struct {
-	CLI      string `json:"cli"`
-	ModelArg string `json:"model_arg"`
+	// CLI is the command to run (e.g., "claude", "gemini", "llm")
+	CLI string `json:"cli"`
+	// ModelID is the model ID to pass to the CLI
+	ModelID string `json:"model_id"`
 }
 
 // AppConfig represents the application configuration
@@ -34,32 +36,37 @@ type AppConfig struct {
 }
 
 // defaultConfig returns the default configuration
+// Uses shortcuts for claude and gemini CLIs
 func defaultConfig() *AppConfig {
 	return &AppConfig{
-		DefaultModel: "claude-sonnet-4",
+		DefaultModel: "haiku",
 		Models: map[string]ModelConfig{
+			// Shortcut aliases
+			"haiku":   {CLI: "claude", ModelID: "claude-haiku-4-5-20251001"},
+			"haiku45": {CLI: "claude", ModelID: "claude-haiku-4-5-20251001"},
+			"haiku35": {CLI: "claude", ModelID: "claude-3-5-haiku-20241022"},
+
 			// Claude models
-			"claude-opus-4-5":   {CLI: "claude", ModelArg: "claude-opus-4-5-20250101"},
-			"claude-opus-4":     {CLI: "claude", ModelArg: "claude-opus-4-20250101"},
-			"claude-sonnet-4-5": {CLI: "claude", ModelArg: "claude-3-7-sonnet-20250219"},
-			"claude-sonnet-4":   {CLI: "claude", ModelArg: "claude-3-5-sonnet-20241022"},
-			"claude-sonnet-3-5": {CLI: "claude", ModelArg: "claude-3-5-sonnet-20241022"},
-			"claude-sonnet-3":   {CLI: "claude", ModelArg: "claude-3-sonnet-20240229"},
-			"claude-haiku-4":    {CLI: "claude", ModelArg: "claude-3-5-haiku-20241022"},
-			"claude-haiku-3-5":  {CLI: "claude", ModelArg: "claude-3-5-haiku-20241022"},
-			"claude-haiku-3":    {CLI: "claude", ModelArg: "claude-3-haiku-20240307"},
-			"claude-opus":       {CLI: "claude", ModelArg: "claude-3-opus-20240229"},
-			"claude-sonnet":     {CLI: "claude", ModelArg: "claude-3-5-sonnet-20241022"},
-			"claude-haiku":      {CLI: "claude", ModelArg: "claude-3-5-haiku-20241022"},
+			"opus":    {CLI: "claude", ModelID: "claude-opus-4-5-20251101"},
+			"opus45":  {CLI: "claude", ModelID: "claude-opus-4-5-20251101"},
+			"opus41":  {CLI: "claude", ModelID: "claude-opus-4-20250101"},
+
+			"sonnet":   {CLI: "claude", ModelID: "claude-sonnet-4-5-20251001"},
+			"sonnet45": {CLI: "claude", ModelID: "claude-sonnet-4-5-20251001"},
+			"sonnet35": {CLI: "claude", ModelID: "claude-3-5-sonnet-20241022"},
+			"sonnet37": {CLI: "claude", ModelID: "claude-3-7-sonnet-20250219"},
+			"claude":   {CLI: "claude", ModelID: "claude-sonnet-4-5-20251001"},
 
 			// Gemini models
-			"gemini-pro":         {CLI: "gemini", ModelArg: "gemini-2.0-flash-exp"},
-			"gemini-flash":       {CLI: "gemini", ModelArg: "gemini-2.0-flash-exp"},
-			"gemini-2-flash":     {CLI: "gemini", ModelArg: "gemini-2.0-flash-exp"},
-			"gemini-2-pro":       {CLI: "gemini", ModelArg: "gemini-1.5-pro"},
-			"gemini-1-5-pro":     {CLI: "gemini", ModelArg: "gemini-1.5-pro"},
-			"gemini-1-5-flash":   {CLI: "gemini", ModelArg: "gemini-1.5-flash"},
-			"gemini-1-5-flash-8b": {CLI: "gemini", ModelArg: "gemini-1.5-flash-8b"},
+			"gemini":        {CLI: "gemini", ModelID: "gemini-3-pro-preview"},
+			"gemini30":      {CLI: "gemini", ModelID: "gemini-3-pro-preview"},
+			"gemini30pro":   {CLI: "gemini", ModelID: "gemini-3-pro-preview"},
+			"gemini30flash": {CLI: "gemini", ModelID: "gemini-3-flash-preview"},
+			"flash":         {CLI: "gemini", ModelID: "gemini-3-flash-preview"},
+			"flash30":       {CLI: "gemini", ModelID: "gemini-3-flash-preview"},
+			"pro25":         {CLI: "gemini", ModelID: "gemini-2.5-pro-exp"},
+			"flash25":         {CLI: "gemini", ModelID: "gemini-2.5-flash"},
+
 		},
 	}
 }
@@ -118,26 +125,22 @@ func createDefaultConfig() (*AppConfig, error) {
 	return config, nil
 }
 
-// GetModelConfig returns the CLI and model arg for a given model ID
-// Returns empty config if model not found
-func GetModelConfig(modelID string) ModelConfig {
+// GetModelConfig returns the CLI and model ID for a given alias
+func GetModelConfig(alias string) ModelConfig {
 	config, err := Load()
 	if err != nil {
-		// Fallback to default if load fails
-		defaultCfg := defaultConfig()
-		if cfg, ok := defaultCfg.Models[modelID]; ok {
-			return cfg
-		}
-		return ModelConfig{}
+		// Return the alias as-is if config fails
+		return ModelConfig{CLI: "llm", ModelID: alias}
 	}
 
-	if cfg, ok := config.Models[modelID]; ok {
+	if cfg, ok := config.Models[alias]; ok {
 		return cfg
 	}
-	return ModelConfig{}
+	// Pass through unknown aliases to llm CLI
+	return ModelConfig{CLI: "llm", ModelID: alias}
 }
 
-// GetDefaultModel returns the default model ID
+// GetDefaultModel returns the default model alias
 func GetDefaultModel() string {
 	config, err := Load()
 	if err != nil {

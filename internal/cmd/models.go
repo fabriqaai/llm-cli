@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/fabriqaai/llm-cli/internal/config"
 	"github.com/spf13/cobra"
@@ -11,8 +10,7 @@ import (
 
 var modelsCmd = &cobra.Command{
 	Use:   "models",
-	Short: "List available models",
-	PreRunE: preRun,
+	Short: "List available model aliases",
 	Run: func(cmd *cobra.Command, args []string) {
 		listModels()
 	},
@@ -29,45 +27,55 @@ func listModels() {
 		return
 	}
 
-	fmt.Println("Available models:")
+	fmt.Println("Available model aliases:")
 	fmt.Println()
 
-	// Group models by CLI
+	// Group aliases by CLI
+	shortcutModels := []string{}
 	claudeModels := []string{}
 	geminiModels := []string{}
+	otherModels := []string{}
 
-	for modelID := range cfg.Models {
-		if strings.HasPrefix(modelID, "claude-") {
-			claudeModels = append(claudeModels, modelID)
-		} else if strings.HasPrefix(modelID, "gemini-") {
-			geminiModels = append(geminiModels, modelID)
+	for alias, modelCfg := range cfg.Models {
+		if alias == "haiku" {
+			shortcutModels = append(shortcutModels, alias)
+		} else if modelCfg.CLI == "claude" {
+			claudeModels = append(claudeModels, alias)
+		} else if modelCfg.CLI == "gemini" {
+			geminiModels = append(geminiModels, alias)
+		} else {
+			otherModels = append(otherModels, alias)
 		}
 	}
 
+	sort.Strings(shortcutModels)
 	sort.Strings(claudeModels)
 	sort.Strings(geminiModels)
+	sort.Strings(otherModels)
 
-	fmt.Println("Claude models:")
-	for _, m := range claudeModels {
-		modelCfg := cfg.Models[m]
-		defaultMark := ""
-		if m == cfg.DefaultModel {
-			defaultMark = " (default)"
-		}
-		fmt.Printf("  %s%s -> %s -m %s\n", m, defaultMark, modelCfg.CLI, modelCfg.ModelArg)
+	printModelGroup("Shortcuts", shortcutModels, cfg)
+	printModelGroup("Claude", claudeModels, cfg)
+	printModelGroup("Gemini", geminiModels, cfg)
+	if len(otherModels) > 0 {
+		printModelGroup("Other", otherModels, cfg)
 	}
 
-	fmt.Println()
-	fmt.Println("Gemini models:")
-	for _, m := range geminiModels {
-		modelCfg := cfg.Models[m]
+	fmt.Printf("\nConfig file: %s\n", config.ConfigFile())
+	fmt.Println("\nAdd custom aliases by editing the config file.")
+}
+
+func printModelGroup(category string, aliases []string, cfg *config.AppConfig) {
+	if len(aliases) == 0 {
+		return
+	}
+	fmt.Printf("%s:\n", category)
+	for _, alias := range aliases {
+		modelCfg := cfg.Models[alias]
 		defaultMark := ""
-		if m == cfg.DefaultModel {
+		if alias == cfg.DefaultModel {
 			defaultMark = " (default)"
 		}
-		fmt.Printf("  %s%s -> %s -m %s\n", m, defaultMark, modelCfg.CLI, modelCfg.ModelArg)
+		fmt.Printf("  %s%s -> %s -m %s\n", alias, defaultMark, modelCfg.CLI, modelCfg.ModelID)
 	}
-
 	fmt.Println()
-	fmt.Printf("Config file: %s\n", config.ConfigFile())
 }
