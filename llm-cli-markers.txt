@@ -1,0 +1,7 @@
+3.0 - brew tap fabriqaai/tap
+5.0 - brew install llm-cli
+9.0 - llm-cli "hello"
+21.0 - llm-cli "what is the capital of france?"
+29.0 - llm-cli haiku "what is the capital of france?"
+37.0 - llm-cli opus "explain LLMs to me like I am 5 years old"
+49.0 - llm-cli sonnet "translate merhaba to english from turkish"
