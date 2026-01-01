@@ -164,12 +164,12 @@ Edit `~/.llm-cli/options.json` to control session directory behavior:
 
 ```json
 {
-  "run_on_current_directory": false
+  "run_on_current_directory": true
 }
 ```
 
-- `false` (default) - CLI runs in `~/.llm-cli/sessions`, sessions stored centrally
-- `true` - CLI runs in current directory, sessions stored there
+- `true` (default) - CLI runs in current directory, sessions stored there
+- `false` - CLI runs in `~/.llm-cli/sessions`, sessions stored centrally
 
 You can temporarily override this with the `-t` flag to run in sessions directory:
 ```bash
@@ -178,9 +178,7 @@ llm-cli -t haiku "run in temp/sessions directory"
 
 ## Sessions
 
-By default, all sessions are stored in `~/.llm-cli/sessions/`.
-
-When `run_on_current_directory` is set to `true`, the underlying CLI stores session history in the current directory. This allows you to:
+By default, sessions are stored in the current directory. This allows you to:
 
 1. Run llm-cli in a project directory
 2. Have conversations specific to that project
@@ -189,6 +187,8 @@ When `run_on_current_directory` is set to `true`, the underlying CLI stores sess
    claude --resume    # For Claude models
    gemini --resume    # For Gemini models
    ```
+
+When `run_on_current_directory` is set to `false`, all sessions are stored in `~/.llm-cli/sessions/`.
 
 ## Available Models
 

@@ -14,14 +14,14 @@ func OptionsFile() string {
 // Options represents the application options
 type Options struct {
 	// RunOnCurrentDirectory determines whether to run CLI in current directory
-	// or in the sessions directory. Defaults to false (sessions).
+	// or in the sessions directory. Defaults to true.
 	RunOnCurrentDirectory bool `json:"run_on_current_directory"`
 }
 
 // defaultOptions returns the default options
 func defaultOptions() *Options {
 	return &Options{
-		RunOnCurrentDirectory: false,
+		RunOnCurrentDirectory: true,
 	}
 }
 
@@ -117,12 +117,8 @@ func GetWorkingDirectory(runOnTempDir bool) (string, error) {
 	// Load options
 	options, err := LoadOptions()
 	if err != nil {
-		// If options can't be loaded, default to sessions directory
-		sessionsDir := SessionsDir()
-		if err := EnsureSessionsDir(); err != nil {
-			return "", err
-		}
-		return sessionsDir, nil
+		// If options can't be loaded, default to current directory
+		return os.Getwd()
 	}
 
 	// If run_on_current_directory is true, use current directory
@@ -130,7 +126,7 @@ func GetWorkingDirectory(runOnTempDir bool) (string, error) {
 		return os.Getwd()
 	}
 
-	// Otherwise (default), use sessions directory
+	// Otherwise, use sessions directory
 	sessionsDir := SessionsDir()
 	if err := EnsureSessionsDir(); err != nil {
 		return "", err

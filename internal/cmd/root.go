@@ -74,12 +74,12 @@ CONFIGURATION:
   }
 
 SESSIONS:
-  When run_on_current_directory is true, the underlying CLI (claude/gemini)
+  When run_on_current_directory is true (default), the underlying CLI (claude/gemini)
   stores session history in the current directory. You can resume these sessions using:
     claude --resume    (for Claude models)
     gemini --resume    (for Gemini models)
 
-  When false (default), sessions are stored in ~/.llm-cli/sessions/
+  When false, sessions are stored in ~/.llm-cli/sessions/
 
   Use -t flag to temporarily run in temp/sessions directory.`,
 	Args:              cobra.ArbitraryArgs,
