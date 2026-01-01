@@ -14,13 +14,13 @@ import (
 )
 
 var (
-	modelFlag           string
-	promptFlag          string
-	systemFlag          string
-	runOnCurrentDirFlag bool
-	version             string
-	commit              string
-	date                string
+	modelFlag         string
+	promptFlag        string
+	systemFlag        string
+	runOnTempDirFlag  bool
+	version           string
+	commit            string
+	date              string
 )
 
 var rootCmd = &cobra.Command{
@@ -58,11 +58,11 @@ POSITIONAL ARGUMENTS:
   prompt         The prompt text to send to the LLM
 
 FLAGS:
-  -m, --model string              Model to use (e.g., haiku, opus, sonnet, gemini)
-  -p, --prompt string             Prompt text
-  -s, --system string             System prompt for context
-  -d, --run-on-current-directory  Run CLI in current directory instead of sessions folder
-                                  (overrides ~/.llm-cli/options.json config)
+  -m, --model string             Model to use (e.g., haiku, opus, sonnet, gemini)
+  -p, --prompt string            Prompt text
+  -s, --system string            System prompt for context
+  -t, --run-on-temp-directory    Run CLI in temp/sessions directory instead of current directory
+                                 (overrides ~/.llm-cli/options.json config)
 
 CONFIGURATION:
   Models config: ~/.llm-cli/models.json
@@ -74,12 +74,14 @@ CONFIGURATION:
   }
 
 SESSIONS:
-  When run_on_current_directory is true (default), the underlying CLI (claude/gemini)
+  When run_on_current_directory is true, the underlying CLI (claude/gemini)
   stores session history in the current directory. You can resume these sessions using:
     claude --resume    (for Claude models)
     gemini --resume    (for Gemini models)
 
-  When false, sessions are stored in ~/.llm-cli/sessions/`,
+  When false (default), sessions are stored in ~/.llm-cli/sessions/
+
+  Use -t flag to temporarily run in temp/sessions directory.`,
 	Args:              cobra.ArbitraryArgs,
 	DisableFlagParsing: false,
 	RunE:              runRoot,
@@ -101,7 +103,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&modelFlag, "model", "m", "", "Model to use (e.g., haiku, opus, sonnet, gemini)")
 	rootCmd.Flags().StringVarP(&promptFlag, "prompt", "p", "", "Prompt text")
 	rootCmd.Flags().StringVarP(&systemFlag, "system", "s", "", "System prompt for context")
-	rootCmd.Flags().BoolVarP(&runOnCurrentDirFlag, "run-on-current-directory", "d", false, "Run CLI in current directory (overrides options config)")
+	rootCmd.Flags().BoolVarP(&runOnTempDirFlag, "run-on-temp-directory", "t", false, "Run CLI in temp/sessions directory (overrides options config)")
 	rootCmd.AddCommand(versionCmd)
 }
 
@@ -152,17 +154,17 @@ func runRoot(cmd *cobra.Command, args []string) error {
 	modelConfig := config.GetModelConfig(modelAlias)
 
 	// Execute the appropriate CLI
-	return executeLLM(modelConfig.CLI, modelConfig.ModelID, promptText, systemFlag, runOnCurrentDirFlag)
+	return executeLLM(modelConfig.CLI, modelConfig.ModelID, promptText, systemFlag, runOnTempDirFlag)
 }
 
 // executeLLM runs the appropriate CLI with the prompt
-func executeLLM(cli, modelID, prompt, systemPrompt string, runOnCurrentDir bool) error {
+func executeLLM(cli, modelID, prompt, systemPrompt string, runOnTempDir bool) error {
 	if prompt == "" {
 		return fmt.Errorf("no prompt provided")
 	}
 
 	// Get the working directory for this session
-	workDir, err := config.GetWorkingDirectory(runOnCurrentDir)
+	workDir, err := config.GetWorkingDirectory(runOnTempDir)
 	if err != nil {
 		return fmt.Errorf("failed to determine working directory: %w", err)
 	}
