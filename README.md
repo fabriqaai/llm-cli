@@ -6,6 +6,8 @@
 
 A simple CLI wrapper for [Claude](https://github.com/anthropics/claude-cli) and [Gemini](https://github.com/google/generative-ai-cli) CLIs. Provides a unified interface to prompt different models without worrying about which underlying CLI to use.
 
+
+Blog article about this  https://www.cengizhan.com/p/llm-cli-simple-aliases-for-your-favorite
 ## Features
 
 - **Unified Interface** - Single CLI for both Claude and Gemini models
